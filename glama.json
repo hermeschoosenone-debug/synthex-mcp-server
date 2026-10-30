@@ -1,0 +1,65 @@
+{
+  "$schema": "https://glama.ai/mcp/schemas/server.json",
+  "maintainers": [
+    "hermeschoosenone-debug"
+  ],
+  "name": "synthex-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for the Synthex Forge x402 paid service catalogue. Every paid route on the remote service is exposed as an MCP tool, paid for with x402 (USDC on Base mainnet), and returns the on-chain settlement transaction hash. Includes one free tool, `catalogue`, that reads the live catalogue with no payment.",
+  "license": "MIT",
+  "homepage": "https://synthexforge.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hermeschoosenone-debug/synthex-mcp-server"
+  },
+  "categories": [
+    "payments",
+    "finance",
+    "developer-tools",
+    "api"
+  ],
+  "keywords": [
+    "x402",
+    "usdc",
+    "base",
+    "payments",
+    "attestation",
+    "verification"
+  ],
+  "pricing": {
+    "paid": {
+      "toolCount": 128,
+      "currency": "USD",
+      "rail": "x402/base/usdc",
+      "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "network": "eip155:8453",
+      "notes": "Each paid tool proxies one remote route on https://x402.synthexforge.com. The price of each individual tool is carried in that tool's _meta block (synthex.io/price) and in its description."
+    },
+    "free": {
+      "toolCount": 1,
+      "tools": ["catalogue"]
+    }
+  },
+  "remote": {
+    "type": "streamable-http",
+    "url": "http://localhost:8080/mcp",
+    "command": "npx",
+    "args": ["-y", "synthex-mcp-server", "--http", "--port", "8080"],
+    "environment": {
+      "SYNTHX_PAYER_PRIVATE_KEY": "The payer private key for x402 payments. Read from the environment only; never logged, never written to disk.",
+      "SYNTHX_ALLOW_LIVE_SPEND": "Set to 1 to permit real on-chain payment. Off by default."
+    }
+  },
+  "installations": {
+    "npm": {
+      "type": "npm",
+      "command": "npx",
+      "args": ["-y", "synthex-mcp-server"]
+    },
+    "docker": {
+      "type": "docker",
+      "image": "ghcr.io/hermeschoosenone-debug/synthex-mcp-server",
+      "args": ["--http", "--port", "8080"]
+    }
+  }
+}

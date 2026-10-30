@@ -1,0 +1,75 @@
+{
+  "name": "synthex-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for the Synthex Forge x402 paid service catalogue. Exposes every paid remote route as an MCP tool, with real x402 (EIP-3009 USDC) payment.",
+  "license": "MIT",
+  "author": "Synthex Forge <enquiries@ziixcapital.com>",
+  "homepage": "https://synthexforge.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hermeschoosenone-debug/synthex-mcp-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hermeschoosenone-debug/synthex-mcp-server/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "x402",
+    "usdc",
+    "base",
+    "payments",
+    "agent",
+    "synthex",
+    "forge"
+  ],
+  "type": "module",
+  "bin": {
+    "synthex-mcp-server": "dist/cli.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./manifest": "./src/generated/tools.manifest.json"
+  },
+  "files": [
+    "dist",
+    "src/generated/tools.manifest.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.17.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && node scripts/postbuild.mjs",
+    "clean": "rm -rf dist",
+    "generate": "tsx scripts/generate-manifest.ts",
+    "generate:check": "tsx scripts/generate-manifest.ts --check",
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run clean && npm run build && npm test",
+    "start": "node dist/cli.js",
+    "start:http": "node dist/cli.js --http --port 8080"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "viem": "^2.57.13",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.36.0",
+    "@types/node": "^22.15.3",
+    "eslint": "^9.36.0",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.45.0",
+    "vitest": "^3.2.4"
+  }
+}
