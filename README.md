@@ -109,6 +109,22 @@ npx synthex-mcp-server --list-tools
 
 Prints the generated manifest: every tool with its remote route and price.
 
+```bash
+npx synthex-mcp-server --count
+```
+
+Prints the tool counts, one number per line — paid, free, total:
+
+```
+128
+1
+129
+```
+
+The first number is the paid-tool count, which must equal the number of paid
+routes in the remote service's live OpenAPI document. `npm run generate:check`
+verifies exactly that.
+
 ## Regenerating the tool list
 
 The manifest is committed at `src/generated/tools.manifest.json`. To refresh it

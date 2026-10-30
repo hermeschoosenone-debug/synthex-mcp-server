@@ -30,6 +30,8 @@ interface CliOptions {
   port: number;
   host: string;
   listTools: boolean;
+  /** Print ONLY the tool counts, one number per line, for shell pipelines. */
+  count: boolean;
   version: boolean;
   help: boolean;
   baseUrl?: string;
@@ -41,6 +43,7 @@ function parseArgs(argv: readonly string[]): CliOptions {
     port: 8080,
     host: '127.0.0.1',
     listTools: false,
+    count: false,
     version: false,
     help: false,
   };
@@ -76,6 +79,9 @@ function parseArgs(argv: readonly string[]): CliOptions {
       case '--list-tools':
         options.listTools = true;
         break;
+      case '--count':
+        options.count = true;
+        break;
       case '--version':
         options.version = true;
         break;
@@ -109,6 +115,7 @@ Usage:
   synthex-mcp-server                       stdio transport (default)
   synthex-mcp-server --http --port 8080    streamable HTTP transport
   synthex-mcp-server --list-tools          print the tool manifest and exit
+  synthex-mcp-server --count               print paid/free/total tool counts
 
 Options:
   --http              serve over streamable HTTP
@@ -116,6 +123,7 @@ Options:
   --host <addr>       HTTP bind address (default 127.0.0.1)
   --base-url <url>    override the remote service base URL
   --list-tools        print the tool list as JSON and exit
+  --count             print paid / free / total tool counts and exit
   --version           print the version and exit
   --help              show this help
 
@@ -135,6 +143,13 @@ async function main(): Promise<void> {
   }
   if (options.version) {
     process.stdout.write(`${packageVersion()}\n`);
+    return;
+  }
+  if (options.count) {
+    // One number per line so a shell pipeline can read them directly.
+    process.stdout.write(`${MANIFEST.paidToolCount}\n`);
+    process.stdout.write(`${MANIFEST.freeToolCount}\n`);
+    process.stdout.write(`${MANIFEST.paidToolCount + MANIFEST.freeToolCount}\n`);
     return;
   }
   if (options.listTools) {
