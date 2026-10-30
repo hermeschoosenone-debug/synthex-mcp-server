@@ -164,9 +164,8 @@ async function main(): Promise<void> {
   if (options.baseUrl) env['SYNTHX_BASE_URL'] = options.baseUrl;
   const config = configFromEnv(env);
 
-  const server = createServer(config);
-
   if (!options.http) {
+    const server = createServer(config);
     const transport = new StdioServerTransport();
     await server.connect(transport);
     // stdout is the protocol channel in stdio mode — diagnostics go to stderr.
@@ -176,14 +175,44 @@ async function main(): Promise<void> {
     return;
   }
 
-  const transport = new StreamableHTTPServerTransport({
-    sessionIdGenerator: undefined,
-  });
-  await server.connect(transport);
-
   const { createServer: createHttpServer } = await import('node:http');
+
+  // STATELESS mode: `sessionIdGenerator: undefined`. The SDK requires a FRESH
+  // transport (and a fresh Server bound to it) for EVERY request in stateless
+  // mode — reusing one transport causes message-ID collisions between clients.
+  // See @modelcontextprotocol/sdk server/webStandardStreamableHttp:
+  // "In stateless mode (no sessionIdGenerator), each request must use a fresh
+  // transport. Reusing a stateless transport causes message ID collisions."
   const httpServer = createHttpServer((req, res) => {
-    void transport.handleRequest(req, res);
+    void (async () => {
+      const requestServer = createServer(config);
+      const transport = new StreamableHTTPServerTransport({
+        sessionIdGenerator: undefined,
+      });
+      try {
+        await requestServer.connect(transport);
+        await transport.handleRequest(req, res);
+      } catch (error) {
+        if (!res.headersSent) {
+          res.writeHead(500, { 'content-type': 'application/json' });
+          res.end(
+            JSON.stringify({
+              jsonrpc: '2.0',
+              error: { code: -32603, message: 'Internal server error' },
+              id: null,
+            }),
+          );
+        }
+        process.stderr.write(
+          `synthex-mcp-server: request error: ${
+            error instanceof Error ? error.message : String(error)
+          }\n`,
+        );
+      } finally {
+        void transport.close();
+        void requestServer.close();
+      }
+    })();
   });
 
   await new Promise<void>((resolvePromise) => {

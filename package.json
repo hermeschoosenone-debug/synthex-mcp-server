@@ -48,6 +48,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json && node scripts/postbuild.mjs",
     "clean": "rm -rf dist",
+    "pretest": "npm run build",
     "generate": "tsx scripts/generate-manifest.ts",
     "generate:check": "tsx scripts/generate-manifest.ts --check",
     "lint": "eslint . --max-warnings=0",
